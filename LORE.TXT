@@ -1,0 +1,5 @@
+Argenteus 16 bit kernel ver alpha 0.10
+
+Filesystem: NSFS16
+
+TESTMEM COM is testing low memory
