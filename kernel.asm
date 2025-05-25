@@ -191,24 +191,28 @@ main:
     mov [nsfs_size], dl
 
     mov di, test_file_name
-    call get_file
-    mov bx, 0x7c00
+    mov bx, 0x3000
     call read_file
     
-    mov si, 0x7c00
+    mov si, 0x3000
     call puts
 
     mov di, testmem_filename
-    call get_file
-    mov bx, 0x7c00
+    mov bx, 0x3000
     call read_file
 
-    call 0x7c00
+    call 0x3000
 
     mov bl, al
     call print_hex
     mov bl, ah
     call print_hex
+
+    mov di, commandcom_filename
+    mov bx, 0x3000
+    call read_file
+
+    call 0x3000
 
     jmp $
 
@@ -224,15 +228,12 @@ fs_error:
     call puts
     jmp $
 
-
-msg:
-.success: db "Whuppi", 0
-
 msg_err:
 .floppy: db "Error reading from floppy", 0
 .file: db "File not found:", 0
 
 test_file_name: db "LORE    TXT", 0
 testmem_filename: db "TESTMEM COM", 0
+commandcom_filename: db "COMMAND COM", 0
 
 times (512*4)-($-$$) db 0

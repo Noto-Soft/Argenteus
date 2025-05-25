@@ -217,24 +217,24 @@ fs_error:
     int 16h
     jmp 0FFFFh:0
 
-
-msg:
-.success: db "Whuppi", 0
-
 msg_err:
 .floppy: db "Error reading from floppy", 0
 .file: db "File not found:", 0
 
 kernel_name: db "AG      BIN", 0
-test_file_name: db "LORE    TXT", 0
 
 times 510-($-$$) db 0
 dw 0xaa55
 
-dw 3
+dw 4
 
 db "AG      BIN"
 dw 0
+dw 0
+db 4
+
+db "COMMAND COM"
+dw 6
 dw 0
 db 4
 
