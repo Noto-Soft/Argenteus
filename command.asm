@@ -14,11 +14,13 @@ call puts
 loop:
     mov ah, 0x0
     int 0x16
+    cmp al, ("q" & ~(0x60))
+    je return
     call putc
-    cmp al, "q"
-    jne loop
+    jmp loop
 
-ret
+return:
+    ret
 
 putc:
     pusha
