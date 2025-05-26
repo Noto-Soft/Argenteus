@@ -177,15 +177,6 @@ main:
     mov al, 0x3
     int 0x10
 
-    mov ah, 0x06
-    mov al, 0
-    mov bh, 0x1f
-    mov bl, 0
-    mov cx, 0
-    mov dh, 24
-    mov dl, 80
-    int 0x10
-
     mov ax, 1
     mov cl, [nsfs_size]
     mov dl, [drive]
@@ -226,7 +217,7 @@ kernel_name: db "AG      BIN", 0
 times 510-($-$$) db 0
 dw 0xaa55
 
-dw 4
+dw 5
 
 db "AG      BIN"
 dw 0
@@ -240,6 +231,11 @@ db 4
 
 db "LORE    TXT"
 dw 4
+dw 0
+db 1
+
+db "PITS    TXT"
+dw 10
 dw 0
 db 1
 

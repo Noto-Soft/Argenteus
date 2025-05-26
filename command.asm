@@ -5,6 +5,9 @@ ipget:
     pop bp
     sub bp, ipget
 
+cmp dl, 0x65
+je finish_type
+
 lea si, [bp+linebreak]
 times 2 call puts
 
@@ -46,6 +49,12 @@ runcomm:
     test ax, ax
     jz dir
 
+    lea si, [bp+commbuffer]
+    lea di, [bp+commands.type]
+    call strcmp
+    test ax, ax
+    jz type
+
     jmp lecommandthing
 
 dir:
@@ -69,6 +78,29 @@ dir:
     jmp lecommandthing
 .tmp: times 11 db 0
         db 0x0a, 0x0d, 0
+
+type:
+    mov bx, 0
+    lea di, [bp+.tmp]
+.getfilenameloop:
+    mov ah, 0x0
+    int 0x16
+    call putc
+    mov [di+bx], al
+    inc bx
+    cmp bx, 11
+    jne .getfilenameloop
+    mov bx, 0x7c00
+    mov dl, 0x65
+    ret
+.tmp: times 11 db 0
+        db 0
+
+finish_type:
+    xor dl, dl
+    mov si, 0x7c00
+    call puts
+    jmp lecommandthing
 
 return:
     ret
@@ -151,7 +183,9 @@ linebreak: db 0x0a, 0x0d, 0
 command: db "$ ", 0
 toolong: db 0x0a, 0x0d, "Too long!", 0x0a, 0x0d, 0
 
-commands:
+commands: db "List of commands: dir, help, type", 0x0a, 0x0d, 0
 .dir: db "dir", 0
+.help: db "help", 0
+.type: db "type", 0
 
 times (512*4)-($-$$) db 0

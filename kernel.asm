@@ -11,7 +11,7 @@ heads: dw 0
 nsfs_size: db 2
 
 start:
-    jmp main
+    jmp setup
 
 ;
 ; subroutines
@@ -180,7 +180,7 @@ print_hex:
 ; idk main stuff
 ;
 
-main:
+setup:
     mov al, [si]
     mov bx, [si+1]
     mov cx, [si+3]
@@ -190,6 +190,7 @@ main:
     mov [heads], cx
     mov [nsfs_size], dl
 
+main:
     mov di, test_file_name
     mov bx, 0x3000
     call read_file
@@ -208,25 +209,31 @@ main:
     mov bl, ah
     call print_hex
 
+.command_com:
     mov di, commandcom_filename
     mov bx, 0x3000
     call read_file
 
+.loop:
     call 0x3000
+    call read_file
+    jmp .loop
 
     jmp $
 
 floppy_error:
     mov si, msg_err.floppy
     call puts
-    jmp $
+    mov sp, 0x7c00
+    jmp main.command_com
 
 fs_error:
     mov si, msg_err.file
     call puts
     mov si, di
     call puts
-    jmp $
+    mov sp, 0x7c00
+    jmp main.command_com
 
 msg_err:
 .floppy: db "Error reading from floppy", 0
