@@ -128,7 +128,7 @@ get_file:
     mov cl, [.result+4]
     ret
 .result:
-    dw 0 ; lba on the floppy, relative to the end of the nsfs sector(s), so remember to add the value (1 + nsfs_size) to the lba
+    dw 0 ; lba on the floppy, relative to the end of the nsfs sector(s), so remember to add the value (1+nsfs_size) to the lba
     dw 0 ; offset from the start of the sector
     db 0 ; how many sectors required to be loaded
 
