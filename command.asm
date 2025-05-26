@@ -55,6 +55,17 @@ runcomm:
     test ax, ax
     jz type
 
+    lea si, [bp+commbuffer]
+    lea di, [bp+commands.help]
+    call strcmp
+    test ax, ax
+    jz help
+
+    jmp lecommandthing
+
+help:
+    lea si, [bp+commands]
+    call puts
     jmp lecommandthing
 
 dir:
