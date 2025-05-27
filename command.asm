@@ -83,6 +83,30 @@ strcmp:
     pop si
     ret
 
+strcmp_until_di_end:
+    push si
+    push di
+.loop:
+    mov al, [si]
+    mov ah, [di]
+    inc si
+    inc di
+    cmp ah, 0
+    je .endofstring
+    cmp al, ah
+    jne .notequal
+    jmp .loop
+.endofstring:
+    xor ax, ax
+    jmp .done
+.notequal:
+    mov ax, 1
+    jmp .done
+.done:
+    pop di
+    pop si
+    ret
+
 get_file:
     clc
     pusha
@@ -153,7 +177,7 @@ lecommandthing:
     lea di, [bp+commbuffer]
     mov bx, 0
 
-    mov byte [di], 0
+    call reset_commbuffer
 loop:
     mov ah, 0x0
     int 0x16
@@ -163,18 +187,13 @@ loop:
     je runcomm
     cmp al, 0x08
     je backspace
+    cmp bx, bufferlen-1
+    jnl loop
     call putc
     mov [di+bx], al
     inc bx
     mov byte [di+bx], 0
-check_if_full:
-    cmp bx, bufferlen
-    jl loop
-
-    lea si, [bp+toolong]
-    call puts
-
-    jmp lecommandthing
+    jmp loop
 runcomm:
     lea si, [bp+linebreak]
     call puts
@@ -197,8 +216,17 @@ runcomm:
     test ax, ax
     jz help
 
+    lea si, [bp+commbuffer]
+    lea di, [bp+commands.echo]
+    call strcmp_until_di_end
+    test ax, ax
+    jz echo
+
     jmp lecommandthing
 backspace:
+    cmp bx, 0
+    jng loop
+
     call putc
     push ax
     mov al, " "
@@ -276,6 +304,13 @@ type:
 .tmp: times 11 db 0
         db 0
 
+echo:
+    add si, 5
+    call puts
+    lea si, [bp+linebreak]
+    call puts
+    jmp lecommandthing
+
 finish_type:
     xor dl, dl
     lea si, [bp+linebreak]
@@ -283,6 +318,17 @@ finish_type:
     mov si, 0x7c00
     call puts
     jmp lecommandthing
+
+reset_commbuffer:
+    pusha
+    mov bx, bufferlen - 1
+    lea di, [bp+commbuffer]
+.loop:
+    mov byte [di+bx], 0
+    dec bx
+    jnz .loop
+    popa
+    ret
 
 return:
     ret
@@ -292,14 +338,14 @@ commbuffer: times bufferlen db 0
 
 linebreak: db ENDL, 0
 command: db "$ ", 0
-toolong: db ENDL, "Too long!", ENDL, 0
 
 msg_err:
 .file_not_found: db "File not found: ", 0
 .file_not_found_suggestion: db ENDL, "Use 'dir' to get a list of all available commands.", ENDL, 0
 
-commands: db "List of commands: dir, help, type", ENDL, 0
+commands: db "List of commands: dir, echo, help, type", ENDL, 0
 .dir: db "dir", 0
+.echo: db "echo", 0
 .help: db "help", 0
 .type: db "type", 0
 
