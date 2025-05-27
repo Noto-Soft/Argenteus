@@ -2,6 +2,21 @@ bits 16
 
 jmp main
 
+puts:
+    pusha
+    mov ah, 0x0e
+    mov bx, 0
+.loop:
+    mov al, [si]
+    cmp al, 0
+    je .done
+    int 0x10
+    inc si
+    jmp .loop
+.done:
+    popa
+    ret
+
 print_hex:
     pusha
     mov ah, 0x0e
@@ -26,11 +41,22 @@ print_hex:
 .bl: db 0
 
 main:
+    mov ah, 0x0e
+    mov bh, 0
+    mov al, "0"
+    int 0x10
+    mov al, "x"
+    int 0x10
+
     int 0x12
 
     mov bl, ah
     call print_hex
     mov bl, al
     call print_hex
+    lea si, [bp+kilobytes]
+    call puts
 
     ret
+
+kilobytes: db " kilobytes.", 0
