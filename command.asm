@@ -83,12 +83,20 @@ dir:
     lea si, [bp+.tmp]
     call puts
     pop si
+    push bx
+    mov bl, [si+15]
+    call print_hex
+    pop bx
     add si, 16
+    push si
+    lea si, [bp+linebreak]
+    call puts
+    pop si
     loop .loop
 .done:
     jmp lecommandthing
 .tmp: times 11 db 0
-        db 0x0a, 0x0d, 0
+        db 0x20, 0
 
 type:
     mov bx, 0
