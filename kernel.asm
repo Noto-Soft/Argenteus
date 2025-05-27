@@ -1,6 +1,8 @@
 org 0xc000 ; loaded in at 0x1000:0x0000
 bits 16
 
+%define ENDL 0x0d, 0x0a
+
 jmp short start
 nop
 

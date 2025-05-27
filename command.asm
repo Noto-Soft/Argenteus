@@ -1,5 +1,7 @@
 bits 16
 
+%define ENDL 0x0d, 0x0a
+
 call ipget
 ipget:
     pop bp
@@ -288,15 +290,15 @@ return:
 bufferlen equ 64
 commbuffer: times bufferlen db 0
 
-linebreak: db 0x0a, 0x0d, 0
+linebreak: db ENDL, 0
 command: db "$ ", 0
-toolong: db 0x0a, 0x0d, "Too long!", 0x0a, 0x0d, 0
+toolong: db ENDL, "Too long!", ENDL, 0
 
 msg_err:
 .file_not_found: db "File not found: ", 0
-.file_not_found_suggestion: db 0x0a, 0x0d, "Use 'dir' to get a list of all available commands.", 0x0a, 0x0d, 0
+.file_not_found_suggestion: db ENDL, "Use 'dir' to get a list of all available commands.", ENDL, 0
 
-commands: db "List of commands: dir, help, type", 0x0a, 0x0d, 0
+commands: db "List of commands: dir, help, type", ENDL, 0
 .dir: db "dir", 0
 .help: db "help", 0
 .type: db "type", 0
