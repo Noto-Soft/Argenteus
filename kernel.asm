@@ -156,28 +156,6 @@ read_file:
     popa
     ret
 
-print_hex:
-    pusha
-    mov ah, 0x0e
-    mov bh, 0
-    mov [.bl], bl
-    shr bl, 4
-    and bl, 0xf
-    mov si, bx
-    add si, .hexdigits
-    mov al, [si]
-    int 0x10
-    mov bl, [.bl]
-    and bl, 0xf
-    mov si, bx
-    add si, .hexdigits
-    mov al, [si]
-    int 0x10
-    popa
-    ret
-.hexdigits: db "0123456789ABCDEF"
-.bl: db 0
-
 ;
 ; idk main stuff
 ;
@@ -203,13 +181,8 @@ main:
     mov di, testmem_filename
     mov bx, 0x3000
     call read_file
-
+    
     call 0x3000
-
-    mov bl, al
-    call print_hex
-    mov bl, ah
-    call print_hex
 
 .command_com:
     mov di, commandcom_filename
