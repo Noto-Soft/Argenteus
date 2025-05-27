@@ -125,6 +125,21 @@ get_file:
     dw 0 ; offset from the start of the sector
     db 0 ; how many sectors required to be loaded
 
+capitalize:
+    push bx
+    mov bx, ax
+    mov ah, al
+    or ah, 0x20
+    cmp ah, "a"
+    jl .done
+    cmp ah, "z"
+    jg .done
+    and al, ~(0x20)
+.done:
+    mov ah, bh
+    pop bx
+    ret
+
 start:
     lea si, [bp+linebreak]
     times 2 call puts
@@ -144,6 +159,8 @@ loop:
     je return
     cmp al, 0x0d
     je runcomm
+    cmp al, 0x08
+    je backspace
     call putc
     mov [di+bx], al
     inc bx
@@ -156,7 +173,6 @@ check_if_full:
     call puts
 
     jmp lecommandthing
-
 runcomm:
     lea si, [bp+linebreak]
     call puts
@@ -180,6 +196,18 @@ runcomm:
     jz help
 
     jmp lecommandthing
+backspace:
+    call putc
+    push ax
+    mov al, " "
+    call putc
+    pop ax
+    call putc
+
+    dec bx
+    mov byte [di+bx], 0
+    
+    jmp loop
 
 help:
     lea si, [bp+commands]
@@ -222,6 +250,7 @@ type:
 .getfilenameloop:
     mov ah, 0x0
     int 0x16
+    call capitalize
     call putc
     mov [di+bx], al
     inc bx
@@ -247,6 +276,8 @@ type:
 
 finish_type:
     xor dl, dl
+    lea si, [bp+linebreak]
+    call puts
     mov si, 0x7c00
     call puts
     jmp lecommandthing
