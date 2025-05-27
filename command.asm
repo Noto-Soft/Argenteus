@@ -333,9 +333,6 @@ reset_commbuffer:
 return:
     ret
 
-bufferlen equ 64
-commbuffer: times bufferlen db 0
-
 linebreak: db ENDL, 0
 command: db "$ ", 0
 
@@ -348,5 +345,8 @@ commands: db "List of commands: dir, echo, help, type", ENDL, 0
 .echo: db "echo", 0
 .help: db "help", 0
 .type: db "type", 0
+
+bufferlen equ 512
+commbuffer: times bufferlen db 0
 
 times (512*4)-($-$$) db 0
