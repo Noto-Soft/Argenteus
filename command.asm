@@ -81,6 +81,50 @@ strcmp:
     pop si
     ret
 
+get_file:
+    clc
+    pusha
+    mov cx, [0x500] ; the amount of files available
+    ; di contains the wanted filename
+    mov si, 0x502 ; location of first entry
+.loop:
+    push cx
+    push si
+    push di
+    mov cx, 11
+    rep cmpsb
+    pop di
+    pop si
+    pop cx
+    je .found
+    loop .next ; if there are still files left to check, continue
+
+    jmp .fs_error ; no file found
+.next:
+    add si, 16
+    jmp .loop
+.found:
+    mov ax, [si+11]
+    mov bx, [si+13]
+    mov cl, [si+15]
+    mov [bp+.result], ax
+    mov [bp+.result+2], bx
+    mov [bp+.result+4], cl
+.done:
+    popa
+    mov ax, [.result]
+    mov bx, [.result+2]
+    mov cl, [.result+4]
+    ret
+.fs_error:
+    popa
+    stc
+    ret
+.result:
+    dw 0 ; lba on the floppy, relative to the end of the nsfs sector(s), so remember to add the value (1+nsfs_size) to the lba
+    dw 0 ; offset from the start of the sector
+    db 0 ; how many sectors required to be loaded
+
 start:
     lea si, [bp+linebreak]
     times 2 call puts
@@ -183,9 +227,22 @@ type:
     inc bx
     cmp bx, 11
     jne .getfilenameloop
+    call get_file
+    jc .not_exist
     mov bx, 0x7c00
     mov dl, 0x65
     ret
+.not_exist:
+    lea si, [bp+linebreak]
+    call puts
+    push si
+    lea si, [bp+msg_err.file_not_found]
+    call puts
+    mov si, di
+    call puts
+    pop si
+    call puts
+    jmp lecommandthing
 .tmp: times 11 db 0
         db 0
 
@@ -204,6 +261,9 @@ commbuffer: times bufferlen db 0
 linebreak: db 0x0a, 0x0d, 0
 command: db "$ ", 0
 toolong: db 0x0a, 0x0d, "Too long!", 0x0a, 0x0d, 0
+
+msg_err:
+.file_not_found: db "File not found: ", 0
 
 commands: db "List of commands: dir, help, type", 0x0a, 0x0d, 0
 .dir: db "dir", 0
