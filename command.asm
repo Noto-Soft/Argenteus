@@ -235,12 +235,11 @@ type:
 .not_exist:
     lea si, [bp+linebreak]
     call puts
-    push si
     lea si, [bp+msg_err.file_not_found]
     call puts
     mov si, di
     call puts
-    pop si
+    lea si, [bp+msg_err.file_not_found_suggestion]
     call puts
     jmp lecommandthing
 .tmp: times 11 db 0
@@ -264,6 +263,7 @@ toolong: db 0x0a, 0x0d, "Too long!", 0x0a, 0x0d, 0
 
 msg_err:
 .file_not_found: db "File not found: ", 0
+.file_not_found_suggestion: db 0x0a, 0x0d, "Use 'dir' to get a list of all available commands.", 0x0a, 0x0d, 0
 
 commands: db "List of commands: dir, help, type", 0x0a, 0x0d, 0
 .dir: db "dir", 0
