@@ -217,6 +217,12 @@ runcomm:
     test ax, ax
     jz echo
 
+    lea si, [bp+commbuffer]
+    lea di, [bp+commands.cls]
+    call strcmp
+    test ax, ax
+    jz cls
+
     jmp lecommandthing
 backspace:
     cmp bx, 0
@@ -295,6 +301,14 @@ echo:
     call puts
     jmp lecommandthing
 
+cls:
+    mov ah, 0x0
+    mov al, 0x3
+    int 0x10
+    lea si, [bp+msg.screen_cleared]
+    call puts
+    jmp lecommandthing
+
 finish_type:
     xor dl, dl
     mov si, 0x7c00
@@ -318,11 +332,15 @@ return:
 linebreak: db ENDL, 0
 command: db "$ ", 0
 
+msg:
+.screen_cleared: db "Screen cleared.", ENDL, 0
+
 msg_err:
 .file_not_found: db "File not found: ", 0
 .file_not_found_suggestion: db ENDL, "Use 'dir' to get a list of all available commands.", ENDL, 0
 
-commands: db "List of commands: dir, echo, help, type", ENDL, 0
+commands: db "List of commands: cls, dir, echo, help, type", ENDL, 0
+.cls: db "cls", 0
 .dir: db "dir", 0
 .echo: db "echo", 0
 .help: db "help", 0
