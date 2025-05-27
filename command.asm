@@ -2,11 +2,6 @@ bits 16
 
 %define ENDL 0x0d, 0x0a
 
-call ipget
-ipget:
-    pop bp
-    sub bp, ipget
-
 cmp dl, 0x65
 je finish_type
 

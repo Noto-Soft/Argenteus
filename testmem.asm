@@ -1,10 +1,5 @@
 bits 16
 
-call ipget
-ipget:
-    pop bp
-    sub bp, ipget
-
 jmp main
 
 print_hex:
