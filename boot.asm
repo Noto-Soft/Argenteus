@@ -219,7 +219,7 @@ kernel_name: db "AG      BIN", 0
 times 510-($-$$) db 0
 dw 0xaa55
 
-dw 5
+dw 6
 
 db "AG      BIN"
 dw 0
@@ -230,6 +230,11 @@ db "COMMAND COM"
 dw 6
 dw 0
 db 4
+
+db "FALSE   TXT"
+dw 11
+dw 0
+db 1
 
 db "LORE    TXT"
 dw 4
