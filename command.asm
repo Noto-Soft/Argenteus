@@ -35,7 +35,7 @@ print_hex:
     pusha
     mov ah, 0x0e
     mov bh, 0
-    mov [.bl], bl
+    mov [bp+.bl], bl
     shr bl, 4
     and bl, 0xf
     mov si, bx
@@ -43,7 +43,7 @@ print_hex:
     add si, di
     mov al, [si]
     int 0x10
-    mov bl, [.bl]
+    mov bl, [bp+.bl]
     and bl, 0xf
     mov si, bx
     add si, di
