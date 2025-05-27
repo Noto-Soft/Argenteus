@@ -201,7 +201,7 @@ runcomm:
 
     lea si, [bp+commbuffer]
     lea di, [bp+commands.type]
-    call strcmp
+    call strcmp_until_di_end
     test ax, ax
     jz type
 
@@ -270,25 +270,14 @@ dir:
         db 0x20, 0
 
 type:
-    mov bx, 0
-    lea di, [bp+.tmp]
-.getfilenameloop:
-    mov ah, 0x0
-    int 0x16
-    call capitalize
-    call putc
-    mov [di+bx], al
-    inc bx
-    cmp bx, 11
-    jne .getfilenameloop
+    mov di, si
+    add di, 5
     call get_file
     jc .not_exist
     mov bx, 0x7c00
     mov dl, 0x65
     ret
 .not_exist:
-    lea si, [bp+linebreak]
-    call puts
     lea si, [bp+msg_err.file_not_found]
     call puts
     mov si, di
@@ -308,8 +297,6 @@ echo:
 
 finish_type:
     xor dl, dl
-    lea si, [bp+linebreak]
-    call puts
     mov si, 0x7c00
     call puts
     jmp lecommandthing
