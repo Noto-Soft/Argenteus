@@ -8,8 +8,82 @@ ipget:
 cmp dl, 0x65
 je finish_type
 
-lea si, [bp+linebreak]
-times 2 call puts
+jmp start
+
+putc:
+    pusha
+    mov ah, 0x0e
+    mov bh, 0
+    int 0x10
+    popa
+.done:
+    ret
+
+puts:
+    pusha
+    mov ah, 0x0e
+    mov bx, 0
+.loop:
+    mov al, [si]
+    cmp al, 0
+    je .done
+    int 0x10
+    inc si
+    jmp .loop
+.done:
+    popa
+    ret
+
+print_hex:
+    pusha
+    mov ah, 0x0e
+    mov bh, 0
+    mov [.bl], bl
+    shr bl, 4
+    and bl, 0xf
+    mov si, bx
+    lea di, [bp+.hexdigits]
+    add si, di
+    mov al, [si]
+    int 0x10
+    mov bl, [.bl]
+    and bl, 0xf
+    mov si, bx
+    add si, di
+    mov al, [si]
+    int 0x10
+    popa
+    ret
+.hexdigits: db "0123456789ABCDEF"
+.bl: db 0
+
+strcmp:
+    push si
+    push di
+.loop:
+    mov al, [si]
+    mov ah, [di]
+    inc si
+    inc di
+    cmp al, ah
+    jne .notequal
+    cmp al, 0
+    je .endofstring
+    jmp .loop
+.endofstring:
+    xor ax, ax
+    jmp .done
+.notequal:
+    mov ax, 1
+    jmp .done
+.done:
+    pop di
+    pop si
+    ret
+
+start:
+    lea si, [bp+linebreak]
+    times 2 call puts
 
 lecommandthing:
     lea si, [bp+command]
@@ -122,77 +196,6 @@ finish_type:
     jmp lecommandthing
 
 return:
-    ret
-
-putc:
-    pusha
-    mov ah, 0x0e
-    mov bh, 0
-    int 0x10
-    popa
-.done:
-    ret
-
-puts:
-    pusha
-    mov ah, 0x0e
-    mov bx, 0
-.loop:
-    mov al, [si]
-    cmp al, 0
-    je .done
-    int 0x10
-    inc si
-    jmp .loop
-.done:
-    popa
-    ret
-
-print_hex:
-    pusha
-    mov ah, 0x0e
-    mov bh, 0
-    mov [.bl], bl
-    shr bl, 4
-    and bl, 0xf
-    mov si, bx
-    lea di, [bp+.hexdigits]
-    add si, di
-    mov al, [si]
-    int 0x10
-    mov bl, [.bl]
-    and bl, 0xf
-    mov si, bx
-    add si, di
-    mov al, [si]
-    int 0x10
-    popa
-    ret
-.hexdigits: db "0123456789ABCDEF"
-.bl: db 0
-
-strcmp:
-    push si
-    push di
-.loop:
-    mov al, [si]
-    mov ah, [di]
-    inc si
-    inc di
-    cmp al, ah
-    jne .notequal
-    cmp al, 0
-    je .endofstring
-    jmp .loop
-.endofstring:
-    xor ax, ax
-    jmp .done
-.notequal:
-    mov ax, 1
-    jmp .done
-.done:
-    pop di
-    pop si
     ret
 
 bufferlen equ 64
