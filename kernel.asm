@@ -182,7 +182,6 @@ main:
     mov bx, 0x3000
     call read_file
 
-    mov bp, 0x3000
     call 0x3000
 
 .command_com:
@@ -191,7 +190,6 @@ main:
     call read_file
 
 .loop:
-    mov bp, 0x3000
     call 0x3000
     call read_file
     jmp .loop

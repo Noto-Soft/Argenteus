@@ -2,6 +2,11 @@ bits 16
 
 %define ENDL 0x0d, 0x0a
 
+call ipget
+ipget:
+    pop bp
+    sub bp, ipget
+
 cmp dl, 0x65
 je finish_type
 
@@ -276,12 +281,15 @@ dir:
         db 0x20, 0
 
 type:
+    mov dl, 0x65
+    jmp retrieve
+
+retrieve:
     mov di, si
     add di, 5
     call get_file
     jc .not_exist
-    mov bx, 0x7c00
-    mov dl, 0x65
+    mov bx, 0x8000
     ret
 .not_exist:
     lea si, [bp+msg_err.file_not_found]
@@ -311,7 +319,7 @@ cls:
 
 finish_type:
     xor dl, dl
-    mov si, 0x7c00
+    mov si, 0x8000
     call puts
     jmp lecommandthing
 
