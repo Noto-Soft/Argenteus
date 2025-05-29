@@ -19,6 +19,7 @@ putc:
     int 0x10
     popa
 .done:
+    call update_colors
     ret
 
 puts:
@@ -34,6 +35,7 @@ puts:
     jmp .loop
 .done:
     popa
+    call update_colors
     ret
 
 print_hex:
@@ -55,6 +57,7 @@ print_hex:
     mov al, [si]
     int 0x10
     popa
+    call update_colors
     ret
 .hexdigits: db "0123456789ABCDEF"
 .bl: db 0
@@ -164,6 +167,21 @@ capitalize:
 .done:
     mov ah, bh
     pop bx
+    ret
+
+update_colors:
+    pusha
+    mov cx, 0
+.loop:
+    mov bx, cx
+    shl bx, 1
+    inc bx
+    mov byte [fs:bx], 0x1f
+    inc cx
+    cmp cx, 80*25
+    jne .loop
+.done:
+    popa
     ret
 
 start:

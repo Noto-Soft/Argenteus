@@ -156,9 +156,11 @@ main:
     xor ax, ax
     mov ds, ax
     mov es, ax
-    mov fs, ax
     mov gs, ax
     mov ss, ax
+
+    mov ax, 0xb800
+    mov fs, ax
 
     mov sp, 0x7c00
 
