@@ -228,6 +228,12 @@ runcomm:
     test ax, ax
     jz cls
 
+    cmp bx, 0
+    je lecommandthing
+
+    lea si, [bp+msg_err.invalid_command]
+    call puts
+
     jmp lecommandthing
 backspace:
     cmp bx, 0
@@ -346,6 +352,7 @@ msg:
 msg_err:
 .file_not_found: db "File not found: ", 0
 .file_not_found_suggestion: db ENDL, "Use 'dir' to get a list of all available commands.", ENDL, 0
+.invalid_command: db "THAT is not a command! Use 'help' stinky", ENDL, 0
 
 commands: db "List of commands: cls, dir, echo, help, type", ENDL, 0
 .cls: db "cls", 0
