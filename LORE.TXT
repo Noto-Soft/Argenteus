@@ -1,4 +1,4 @@
-Argenteus 16 bit kernel ver 1.00
+Argenteus 16 bit kernel ver 1.10
 
 (c) Noto-Soft Solutions, 2025
 

@@ -48,9 +48,9 @@ print_hex:
 main:
     mov ah, 0x0e
     mov bh, 0
-    mov al, "0"
+    mov al, '0'
     int 0x10
-    mov al, "x"
+    mov al, 'x'
     int 0x10
 
     int 0x12

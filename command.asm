@@ -163,9 +163,9 @@ capitalize:
     mov bx, ax
     mov ah, al
     or ah, 0x20
-    cmp ah, "a"
+    cmp ah, 'a'
     jl .done
-    cmp ah, "z"
+    cmp ah, 'z'
     jg .done
     and al, ~(0x20)
 .done:
@@ -188,6 +188,50 @@ update_colors:
     popa
     ret
 
+; takes in NAME.EXT (up to 13 bytes, because it counts the dot, and also null terminated) through si
+; spits out 12 byte filename padded with spaces with 8 bytes for a name and 3 for an extension, then a null terminator for error messages, back out to si
+filename_extend:
+    pusha
+    lea di, [bp+.tmp]
+    xor bx, bx
+.a0:
+    mov al, [si]
+    inc si
+    cmp al, '.'
+    je .a1
+    mov [di+bx], al
+    inc bx
+    cmp bx, 8
+    je .b0
+    jmp .a0
+.a1:
+    mov byte [di+bx], ' '
+    inc bx
+    cmp bx, 8
+    je .b0
+    jmp .a1
+.b0:
+    mov al, [si]
+    inc si
+    cmp al, 0
+    je .b1
+    mov [di+bx], al
+    inc bx
+    cmp bx, 11
+    je .c0
+    jmp .b0
+.b1:
+    mov byte [di+bx], ' '
+    inc bx
+    cmp bx, 11
+    je .c0
+    jmp .b1
+.c0:
+    popa
+    lea si, [bp+.tmp]
+    ret
+.tmp: times 12 db 0
+
 start:
     lea si, [bp+linebreak]
     times 2 call puts
@@ -203,7 +247,7 @@ lecommandthing:
 loop:
     mov ah, 0x0
     int 0x16
-    cmp al, ("q" & ~(0x60))
+    cmp al, ('q' & ~(0x60))
     je return
     cmp al, 0x0d
     je runcomm
@@ -281,7 +325,7 @@ backspace:
 
     call putc
     push ax
-    mov al, " "
+    mov al, ' '
     call putc
     pop ax
     call putc
@@ -335,8 +379,9 @@ exec:
     jmp retrieve
 
 retrieve:
+    add si, 5
+    call filename_extend
     mov di, si
-    add di, 5
     call get_file
     jc .not_exist
     mov bx, 0x8000
@@ -368,13 +413,13 @@ cls:
     jmp lecommandthing
 
 a:
-    mov byte [bp+command], "A"
+    mov byte [bp+command], 'A'
     mov dh, 0x0a
     mov dl, 0x14
     ret
 
 c:
-    mov byte [bp+command], "C"
+    mov byte [bp+command], 'C'
     mov dh, 0x0c
     mov dl, 0x14
     ret
