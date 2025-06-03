@@ -7,6 +7,8 @@ ipget:
     pop bp
     sub bp, ipget
 
+cmp dl, 0x52
+je finish_exec
 cmp dl, 0x65
 je finish_type
 cmp dl, 0x14
@@ -260,6 +262,12 @@ runcomm:
     test ax, ax
     jz c
 
+    lea si, [bp+commbuffer]
+    lea di, [bp+commands.exec]
+    call strcmp_until_di_end
+    test ax, ax
+    jz exec
+
     cmp bx, 0
     je lecommandthing
 
@@ -322,6 +330,10 @@ type:
     mov dl, 0x65
     jmp retrieve
 
+exec:
+    mov dl, 0x52
+    jmp retrieve
+
 retrieve:
     mov di, si
     add di, 5
@@ -373,6 +385,14 @@ finish_type:
     call puts
     jmp lecommandthing
 
+finish_exec:
+    xor dl, dl
+    pusha
+    mov bp, 0x8000
+    call bp
+    popa
+    jmp lecommandthing
+
 reset_commbuffer:
     pusha
     mov bx, bufferlen - 1
@@ -398,12 +418,13 @@ msg_err:
 .file_not_found_suggestion: db ENDL, "Use 'dir' to get a list of all available commands.", ENDL, 0
 .invalid_command: db "THAT is not a command! Use 'help' stinky", ENDL, 0
 
-commands: db "List of commands: A:, C:, cls, dir, echo, help, type", ENDL, 0
+commands: db "List of commands: A:, C:, cls, dir, echo, exec, help, type", ENDL, 0
 .a: db "A:", 0
 .c: db "C:", 0
 .cls: db "cls", 0
 .dir: db "dir", 0
 .echo: db "echo", 0
+.exec: db "exec", 0
 .help: db "help", 0
 .type: db "type", 0
 

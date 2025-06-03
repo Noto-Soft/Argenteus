@@ -2,7 +2,12 @@ bits 16
 
 times 512 db 0
 
+dw 2
+
+db "PROGRAM COM"
 dw 1
+dw 0
+db 1
 
 db "TEST    TXT"
 dw 0
