@@ -12,6 +12,11 @@ sectors_per_track: dw 0
 heads: dw 0
 nsfs_size: db 2
 
+drive_c_header:
+    dw 0
+    dw 0
+    dw 0
+
 start:
     jmp setup
 
@@ -170,6 +175,13 @@ setup:
     mov [heads], cx
     mov [nsfs_size], dl
 
+    mov ax, [nsfs16_header]
+    mov [drive_c_header], ax
+    mov ax, [nsfs16_header+2]
+    mov [drive_c_header+2], ax
+    mov ax, [nsfs16_header+4]
+    mov [drive_c_header+4], ax
+
 main:
     mov di, test_file_name
     mov bx, 0x3000
@@ -189,12 +201,62 @@ main:
     mov bx, 0x3000
     call read_file
 
+    push 0
+
 .loop:
+    pop dx
     call 0x3000
+    push dx
+    cmp dl, 0x14
+    je switch_drive
     call read_file
     jmp .loop
 
     jmp $
+
+switch_drive:
+    cmp dh, 0x0a
+    je .drive_a
+    cmp dh, 0x0c
+    je .drive_c
+    jmp main.loop
+.drive_a:
+    mov dl, 1
+
+    mov [drive], dl
+
+    push es
+    mov ah, 08h
+    int 13h
+    jc floppy_error
+    pop es
+
+    and cl, 0x3F
+    xor ch, ch
+    mov [sectors_per_track], cx
+
+    inc dh
+    mov [heads], dh
+
+    jmp .exit
+.drive_c:
+    mov ax, [drive_c_header]
+    mov [nsfs16_header], ax
+    mov ax, [drive_c_header+2]
+    mov [nsfs16_header+2], ax
+    mov ax, [drive_c_header+4]
+    mov [nsfs16_header+4], ax
+
+    jmp .exit
+
+.exit:
+    mov ax, 1
+    mov cl, [nsfs_size]
+    mov dl, [drive]
+    mov bx, 0x500
+    call disk_read
+
+    jmp main.loop
 
 floppy_error:
     mov si, msg_err.floppy

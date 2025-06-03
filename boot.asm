@@ -263,5 +263,5 @@ dw 5
 dw 0
 db 1
 
-NSFS_SIZE_C equ 5
+%include "nsfs.inc"
 times (512+(512*NSFS_SIZE_C))-($-$$) db 0

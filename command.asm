@@ -9,6 +9,8 @@ ipget:
 
 cmp dl, 0x65
 je finish_type
+cmp dl, 0x14
+je dir
 
 jmp start
 
@@ -246,6 +248,18 @@ runcomm:
     test ax, ax
     jz cls
 
+    lea si, [bp+commbuffer]
+    lea di, [bp+commands.a]
+    call strcmp
+    test ax, ax
+    jz a
+
+    lea si, [bp+commbuffer]
+    lea di, [bp+commands.c]
+    call strcmp
+    test ax, ax
+    jz c
+
     cmp bx, 0
     je lecommandthing
 
@@ -341,6 +355,18 @@ cls:
     call puts
     jmp lecommandthing
 
+a:
+    mov byte [bp+command], "A"
+    mov dh, 0x0a
+    mov dl, 0x14
+    ret
+
+c:
+    mov byte [bp+command], "C"
+    mov dh, 0x0c
+    mov dl, 0x14
+    ret
+
 finish_type:
     xor dl, dl
     mov si, 0x8000
@@ -362,7 +388,7 @@ return:
     ret
 
 linebreak: db ENDL, 0
-command: db "$ ", 0
+command: db "C:$ ", 0
 
 msg:
 .screen_cleared: db "Screen cleared.", ENDL, 0
@@ -372,7 +398,9 @@ msg_err:
 .file_not_found_suggestion: db ENDL, "Use 'dir' to get a list of all available commands.", ENDL, 0
 .invalid_command: db "THAT is not a command! Use 'help' stinky", ENDL, 0
 
-commands: db "List of commands: cls, dir, echo, help, type", ENDL, 0
+commands: db "List of commands: A:, C:, cls, dir, echo, help, type", ENDL, 0
+.a: db "A:", 0
+.c: db "C:", 0
 .cls: db "cls", 0
 .dir: db "dir", 0
 .echo: db "echo", 0
