@@ -1,13 +1,19 @@
 bits 16
 %define ENDL 0x0d, 0x0a
-; this is here to get the address where the program is loaded.
-; In this case it doesn't matter because the bp is already used to absolute-call this program by command.com,
-;   but since that isn't guranteed to be the case, we still have this here.
 call ipget
 ipget:
     pop bp
     sub bp, ipget
 jmp main
+putc:
+    pusha
+    mov ah, 0x0e
+    mov bh, 0
+    int 0x10
+    popa
+.done:
+    call update_colors
+    ret
 puts:
     pusha
     mov ah, 0x0e
@@ -38,8 +44,24 @@ update_colors:
     popa
     ret
 main:
-    lea si, [bp+message]
+    mov ah, 0x0
+    mov al, 0x3
+    int 0x10
+    call update_colors
+    lea si, [bp+typer]
     call puts
+.loop:
+    mov ah, 0x0
+    int 0x16
+    cmp al, "\"
+    je .return
+    call putc
+    jmp .loop
+.return:
+    mov ah, 0x0
+    mov al, 0x3
+    int 0x10
+    call update_colors
     ret
-message: db "This is a program running from disk!", ENDL, 0
+typer: db "Typer: type whatever :)", ENDL, "backslash to exit", 0
 times 512-($-$$) db 0

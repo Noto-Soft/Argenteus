@@ -1,12 +1,9 @@
 bits 16
-
 call ipget
 ipget:
     pop bp
     sub bp, ipget
-
 jmp main
-
 puts:
     pusha
     mov ah, 0x0e
@@ -21,7 +18,6 @@ puts:
 .done:
     popa
     ret
-
 print_hex:
     pusha
     mov ah, 0x0e
@@ -44,7 +40,6 @@ print_hex:
     ret
 .hexdigits: db "0123456789ABCDEF"
 .bl: db 0
-
 main:
     mov ah, 0x0e
     mov bh, 0
@@ -52,16 +47,12 @@ main:
     int 0x10
     mov al, 'x'
     int 0x10
-
     int 0x12
-
     mov bl, ah
     call print_hex
     mov bl, al
     call print_hex
     lea si, [bp+kilobytes]
     call puts
-
     ret
-
 kilobytes: db " kilobytes.", 0

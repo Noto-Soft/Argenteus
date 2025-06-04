@@ -1,21 +1,16 @@
 bits 16
-
 %define ENDL 0x0d, 0x0a
-
 call ipget
 ipget:
     pop bp
     sub bp, ipget
-
 cmp dl, 0x52
 je finish_exec
 cmp dl, 0x65
 je finish_type
 cmp dl, 0x14
 je dir
-
 jmp start
-
 putc:
     pusha
     mov ah, 0x0e
@@ -25,7 +20,6 @@ putc:
 .done:
     call update_colors
     ret
-
 puts:
     pusha
     mov ah, 0x0e
@@ -41,7 +35,6 @@ puts:
     popa
     call update_colors
     ret
-
 print_hex:
     pusha
     mov ah, 0x0e
@@ -65,7 +58,6 @@ print_hex:
     ret
 .hexdigits: db "0123456789ABCDEF"
 .bl: db 0
-
 strcmp:
     push si
     push di
@@ -89,7 +81,6 @@ strcmp:
     pop di
     pop si
     ret
-
 strcmp_until_di_end:
     push si
     push di
@@ -113,7 +104,6 @@ strcmp_until_di_end:
     pop di
     pop si
     ret
-
 get_file:
     clc
     pusha
@@ -131,7 +121,6 @@ get_file:
     pop cx
     je .found
     loop .next ; if there are still files left to check, continue
-
     jmp .fs_error ; no file found
 .next:
     add si, 16
@@ -157,7 +146,6 @@ get_file:
     dw 0 ; lba on the floppy, relative to the end of the nsfs sector(s), so remember to add the value (1+nsfs_size) to the lba
     dw 0 ; offset from the start of the sector
     db 0 ; how many sectors required to be loaded
-
 capitalize:
     push bx
     mov bx, ax
@@ -172,7 +160,6 @@ capitalize:
     mov ah, bh
     pop bx
     ret
-
 update_colors:
     pusha
     mov cx, 0
@@ -187,7 +174,6 @@ update_colors:
 .done:
     popa
     ret
-
 ; takes in NAME.EXT (up to 13 bytes, because it counts the dot, and also null terminated) through si
 ; spits out 12 byte filename padded with spaces with 8 bytes for a name and 3 for an extension, then a null terminator for error messages, back out to si
 filename_extend:
@@ -231,18 +217,14 @@ filename_extend:
     lea si, [bp+.tmp]
     ret
 .tmp: times 12 db 0
-
 start:
     lea si, [bp+linebreak]
     times 2 call puts
-
 lecommandthing:
     lea si, [bp+command]
     call puts
-
     lea di, [bp+commbuffer]
     mov bx, 0
-
     call reset_commbuffer
 loop:
     mov ah, 0x0
@@ -263,82 +245,67 @@ loop:
 runcomm:
     lea si, [bp+linebreak]
     call puts
-
     lea si, [bp+commbuffer]
     lea di, [bp+commands.dir]
     call strcmp
     test ax, ax
     jz dir
-
     lea si, [bp+commbuffer]
     lea di, [bp+commands.type]
     call strcmp_until_di_end
     test ax, ax
     jz type
-
     lea si, [bp+commbuffer]
     lea di, [bp+commands.help]
     call strcmp
     test ax, ax
     jz help
-
     lea si, [bp+commbuffer]
     lea di, [bp+commands.echo]
     call strcmp_until_di_end
     test ax, ax
     jz echo
-
     lea si, [bp+commbuffer]
     lea di, [bp+commands.cls]
     call strcmp
     test ax, ax
     jz cls
-
     lea si, [bp+commbuffer]
     lea di, [bp+commands.a]
     call strcmp
     test ax, ax
     jz a
-
     lea si, [bp+commbuffer]
     lea di, [bp+commands.c]
     call strcmp
     test ax, ax
     jz c
-
     call filename_extend
     mov di, si
     call get_file
     jnc exec_direct
-
     cmp bx, 0
     je lecommandthing
-
     lea si, [bp+msg_err.invalid_command]
     call puts
-
     jmp lecommandthing
 backspace:
     cmp bx, 0
     jng loop
-
     call putc
     push ax
     mov al, ' '
     call putc
     pop ax
     call putc
-
     dec bx
     mov byte [di+bx], 0
     
     jmp loop
-
 help:
     lea si, [bp+commands]
     call puts
     jmp lecommandthing
-
 dir:
     mov si, 0x502
     lea di, [bp+.tmp]
@@ -368,11 +335,9 @@ dir:
     jmp lecommandthing
 .tmp: times 11 db 0
         db 0x20, 0
-
 type:
     mov dl, 0x65
     jmp retrieve
-
 exec_direct:
     add si, 8
     lea di, [bp+exec_extensions.com]
@@ -392,9 +357,7 @@ exec_direct:
 .not_exec:
     lea si, [bp+msg_err.not_executable]
     call puts
-
     jmp lecommandthing
-
 retrieve:
     add si, 5
     call filename_extend
@@ -413,14 +376,12 @@ retrieve:
     jmp lecommandthing
 .tmp: times 11 db 0
         db 0
-
 echo:
     add si, 5
     call puts
     lea si, [bp+linebreak]
     call puts
     jmp lecommandthing
-
 cls:
     mov ah, 0x0
     mov al, 0x3
@@ -428,25 +389,21 @@ cls:
     lea si, [bp+msg.screen_cleared]
     call puts
     jmp lecommandthing
-
 a:
     mov byte [bp+command], 'A'
     mov dh, 0x0a
     mov dl, 0x14
     ret
-
 c:
     mov byte [bp+command], 'C'
     mov dh, 0x0c
     mov dl, 0x14
     ret
-
 finish_type:
     xor dl, dl
     mov si, 0x8000
     call puts
     jmp lecommandthing
-
 finish_exec:
     xor dl, dl
     pusha
@@ -454,7 +411,6 @@ finish_exec:
     call bp
     popa
     jmp lecommandthing
-
 reset_commbuffer:
     pusha
     mov bx, bufferlen - 1
@@ -465,22 +421,17 @@ reset_commbuffer:
     jnz .loop
     popa
     ret
-
 return:
     ret
-
 linebreak: db ENDL, 0
 command: db "C:$ ", 0
-
 msg:
 .screen_cleared: db "Screen cleared.", ENDL, 0
-
 msg_err:
 .file_not_found: db "File not found: ", 0
 .file_not_found_suggestion: db ENDL, "Use 'dir' to get a list of all available commands.", ENDL, 0
 .invalid_command: db "That is not a command or file! Use 'help' or 'dir'", ENDL, 0
 .not_executable: db "Not executable file! (.COM or .SYS)", ENDL, 0
-
 commands: db "List of commands: A:, C:, cls, dir, echo, help, type", ENDL, 0
 .a: db "A:", 0
 .c: db "C:", 0
@@ -489,13 +440,10 @@ commands: db "List of commands: A:, C:, cls, dir, echo, help, type", ENDL, 0
 .echo: db "echo", 0
 .help: db "help", 0
 .type: db "type", 0
-
 exec_extensions:
 .com: db "COM", 0
 .sys: db "SYS", 0
 ; add more latre
-
 bufferlen equ 512
 commbuffer: times bufferlen db 0
-
 times (512*4)-($-$$) db 0
