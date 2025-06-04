@@ -280,6 +280,11 @@ runcomm:
     call strcmp
     test ax, ax
     jz c
+    lea si, [bp+commbuffer]
+    lea di, [bp+commands.reboot]
+    call strcmp
+    test ax, ax
+    jz reboot
     call filename_extend
     mov di, si
     call get_file
@@ -398,6 +403,9 @@ c:
     mov dh, 0x0c
     mov dl, 0x14
     ret
+reboot:
+    mov dl, 69
+    ret
 finish_type:
     xor dl, dl
     mov si, 0x8000
@@ -431,13 +439,14 @@ msg_err:
 .file_not_found_suggestion: db ENDL, "Use 'dir' to get a list of all available commands.", ENDL, 0
 .invalid_command: db "That is not a command or file! Use 'help' or 'dir'", ENDL, 0
 .not_executable: db "Not executable file! (.COM or .SYS)", ENDL, 0
-commands: db "List of commands: A:, C:, cls, dir, echo, help, type", ENDL, 0
+commands: db "List of commands: A:, C:, cls, dir, echo, help, reboot, type", ENDL, 0
 .a: db "A:", 0
 .c: db "C:", 0
 .cls: db "cls", 0
 .dir: db "dir", 0
 .echo: db "echo", 0
 .help: db "help", 0
+.reboot: db "reboot", 0
 .type: db "type", 0
 exec_extensions:
 .com: db "COM", 0

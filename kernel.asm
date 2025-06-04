@@ -178,6 +178,8 @@ main:
     push dx
     cmp dl, 0x14
     je switch_drive
+    cmp dl, 69
+    je reboot
     call read_file
     jmp .loop
     jmp $
@@ -216,6 +218,20 @@ switch_drive:
     mov bx, 0x500
     call disk_read
     jmp main.loop
+reboot:
+    mov ax, [drive_c_header]
+    mov [nsfs16_header], ax
+    mov ax, [drive_c_header+2]
+    mov [nsfs16_header+2], ax
+    mov ax, [drive_c_header+4]
+    mov [nsfs16_header+4], ax
+    mov ax, 0
+    mov es, ax
+    mov bx, 0x7c00
+    mov dl, [drive]
+    mov cl, 1
+    call disk_read
+    jmp 0xffff:0x0000
 floppy_error:
     mov si, msg_err.floppy
     call puts
