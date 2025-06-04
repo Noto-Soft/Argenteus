@@ -11,4 +11,5 @@ default:
 	nasm -o disk/typer.com -f bin disk/typer.asm
 	./padup disk/disk2header.bin disk/test.txt disk/program.com disk/typer.com > disk2.img
 	truncate -s 1440k os.img
+	truncate -s 1440k disk2.img
 	qemu-system-i386 -drive file="os.img",if=floppy,format=raw -drive file="disk2.img",if=floppy,format=raw
