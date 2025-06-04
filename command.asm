@@ -306,11 +306,10 @@ runcomm:
     test ax, ax
     jz c
 
-    lea si, [bp+commbuffer]
-    lea di, [bp+commands.exec]
-    call strcmp_until_di_end
-    test ax, ax
-    jz exec
+    call filename_extend
+    mov di, si
+    call get_file
+    jnc exec_direct
 
     cmp bx, 0
     je lecommandthing
@@ -374,9 +373,27 @@ type:
     mov dl, 0x65
     jmp retrieve
 
-exec:
+exec_direct:
+    add si, 8
+    lea di, [bp+exec_extensions.com]
+    call strcmp_until_di_end
+    test ax, ax
+    jz .executable
+    lea di, [bp+exec_extensions.sys]
+    call strcmp_until_di_end
+    test ax, ax
+    jz .executable
+    jmp .not_exec
+.executable:
+    sub si, 8
     mov dl, 0x52
+    sub si, 5
     jmp retrieve
+.not_exec:
+    lea si, [bp+msg_err.not_executable]
+    call puts
+
+    jmp lecommandthing
 
 retrieve:
     add si, 5
@@ -461,17 +478,22 @@ msg:
 msg_err:
 .file_not_found: db "File not found: ", 0
 .file_not_found_suggestion: db ENDL, "Use 'dir' to get a list of all available commands.", ENDL, 0
-.invalid_command: db "THAT is not a command! Use 'help' stinky", ENDL, 0
+.invalid_command: db "That is not a command or file! Use 'help' or 'dir'", ENDL, 0
+.not_executable: db "Not executable file! (.COM or .SYS)", ENDL, 0
 
-commands: db "List of commands: A:, C:, cls, dir, echo, exec, help, type", ENDL, 0
+commands: db "List of commands: A:, C:, cls, dir, echo, help, type", ENDL, 0
 .a: db "A:", 0
 .c: db "C:", 0
 .cls: db "cls", 0
 .dir: db "dir", 0
 .echo: db "echo", 0
-.exec: db "exec", 0
 .help: db "help", 0
 .type: db "type", 0
+
+exec_extensions:
+.com: db "COM", 0
+.sys: db "SYS", 0
+; add more latre
 
 bufferlen equ 512
 commbuffer: times bufferlen db 0
