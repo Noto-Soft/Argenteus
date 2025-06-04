@@ -300,7 +300,6 @@ backspace:
     call putc
     dec bx
     mov byte [di+bx], 0
-    
     jmp loop
 help:
     lea si, [bp+commands]
