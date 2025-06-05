@@ -18,12 +18,10 @@ lba_to_chs:
     push dx
     xor dx, dx
     div word [sectors_per_track]
-    
     inc dx
     mov cx, dx
     xor dx, dx
     div word [heads]
-    
     mov dh, dl
     mov ch, al
     shl ah, 6

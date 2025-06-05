@@ -17,17 +17,51 @@ start:
 ;
 ; subroutines
 ;
+update_colors:
+    pusha
+    mov cx, 0
+.loop:
+    mov bx, cx
+    shl bx, 1
+    inc bx
+    mov byte [fs:bx], 0x1f
+    inc cx
+    cmp cx, 80*25
+    jne .loop
+.done:
+    popa
+    ret
+print_hex:
+    pusha
+    mov ah, 0x0e
+    mov bh, 0
+    mov [.bl], bl
+    shr bl, 4
+    and bl, 0xf
+    mov si, bx
+    lea di, [.hexdigits]
+    add si, di
+    mov al, [si]
+    int 0x10
+    mov bl, [.bl]
+    and bl, 0xf
+    mov si, bx
+    add si, di
+    mov al, [si]
+    int 0x10
+    popa
+    ret
+.hexdigits: db "0123456789ABCDEF"
+.bl: db 0
 lba_to_chs:
     push ax
     push dx
     xor dx, dx
     div word [sectors_per_track]
-    
     inc dx
     mov cx, dx
     xor dx, dx
     div word [heads]
-    
     mov dh, dl
     mov ch, al
     shl ah, 6
@@ -160,7 +194,6 @@ main:
     mov di, test_file_name
     mov bx, 0x3000
     call read_file
-    
     mov si, 0x3000
     call puts
     mov di, testmem_filename
@@ -180,6 +213,8 @@ main:
     je switch_drive
     cmp dl, 69
     je reboot
+    cmp dl, 0x69
+    je blue_screen_of_fate
     call read_file
     jmp .loop
     jmp $
@@ -244,10 +279,135 @@ fs_error:
     call puts
     mov sp, 0x7c00
     jmp main.command_com
+blue_screen_of_fate:
+    pusha
+    push bp
+    mov ah, 0x0
+    mov al, 0x3
+    int 0x10
+    call update_colors
+    push si
+    lea si, [msg_err.sir]
+    call puts
+    push bx
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    pop ax
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    mov ax, cx
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    mov ax, dx
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    pop ax
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    mov ax, di
+    push ax
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [axbxcxdxsidi]
+    call puts
+    mov ax, cs
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    mov ax, ds
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    mov ax, es
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    mov ax, fs
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    mov ax, gs
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [csdsesfsgs]
+    call puts
+    mov ax, ss
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    mov ax, sp
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    mov ax, bp
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [space]
+    call puts
+    pop bp
+    mov ax, bp
+    mov bl, ah
+    call print_hex
+    mov bl, al
+    call print_hex
+    lea si, [ssspbpip]
+    call puts
+    popa
+    jmp $
 msg_err:
 .floppy: db "Error reading from floppy", 0
 .file: db "File not found:", 0
+.sir: db "The computer has run into a problem and needed to be stopped.", ENDL, 0
 test_file_name: db "LORE    TXT", 0
 testmem_filename: db "TESTMEM COM", 0
 commandcom_filename: db "COMMAND COM", 0
+new_line: db ENDL, 0
+space: db " ", 0
+axbxcxdxsidi: db "   AX BX CX DX SI DI", ENDL, 0
+csdsesfsgs: db "        CS DS ES FS GS", ENDL, 0
+ssspbpip: db "             SS SP BP IP", ENDL, 0
 times (512*4)-($-$$) db 0
